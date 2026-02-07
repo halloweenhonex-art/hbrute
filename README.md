@@ -1,26 +1,26 @@
-# 💀 HBRUTE v3.0 Ultimate Edition
+# 💀 HBRUTE v3.1 Ultimate Edition
+![Banner](hbrute_github_banner_v3_1.png)
 
 Advanced Web Security Auditing Tool. Multi-platform support: Windows, Linux, Android (Termux).
 
-## 🚀 Installation
+---
+**Author:** [@honex4](https://t.me/honex4)  
+**Version:** 3.1.0 (God Mode)  
+**License:** Open Source / Education Only
+---
 
-### 1. Requirements
-Ensure you have Python 3.10+ installed.
+## 🚀 Installation Guide
 
-### 2. Automatic Install (Recommended)
+### 🐧 Linux (Ubuntu/Debian/Kali)
 ```bash
+sudo apt update && sudo apt install python3 python3-pip git -y
 git clone https://github.com/halloweenhonex-art/hbrute.git
 cd hbrute
-pip install .
-```
-
-### 3. Usage
-Run it from anywhere:
-```bash
+pip install . --break-system-packages
 hbrute
 ```
 
-## 📱 Android (Termux) Guide
+### 📱 Android (Termux)
 ```bash
 pkg update && pkg upgrade
 pkg install python git
@@ -30,6 +30,24 @@ pip install .
 hbrute
 ```
 
+### 🪟 Windows (CMD/PowerShell)
+```bash
+git clone https://github.com/halloweenhonex-art/hbrute.git
+cd hbrute
+pip install .
+hbrute
+```
+
+## 🛠 Features
+- **Admin Brute-force**: Advanced multi-threaded admin panel search.
+- **Vulnerability Scanner**: Detection of common web flaws.
+- **Subdomain Finder**: Rapid subdomain enumeration.
+- **Port Scanner**: High-speed network scanner.
+- **WAF Detection**: Identify firewalls before attack.
+
+## 🤝 Socials
+- **Telegram**: [@honex4](https://t.me/honex4)
+- **Support Project**: Star this repo! ⭐
+
 ---
-**Author:** halloweenhonex-art
-**License:** Open Source
+*Disclaimer: Using this tool for unauthorized attacks is illegal. Use it only for educational purposes.*
