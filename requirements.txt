@@ -1,0 +1,5 @@
+requests[socks]
+pillow
+beautifulsoup4
+html2image
+cryptography
