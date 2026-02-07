@@ -29,33 +29,22 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         self.modules = {}
         for name in self.zip_file.namelist():
             if name.endswith(".py"):
-                # Нормализуем путь в имя модуля
-                clean_name = name.replace("/", ".").replace("\\", ".")
-                if clean_name.endswith(".__init__.py"):
-                    mod_name = clean_name[:-12]
+                # Превращаем путь в имя модуля: hbrute/core/banner.py -> hbrute.core.banner
+                mod_name = name.replace("/", ".").replace("\\", ".")
+                if mod_name.endswith(".__init__.py"):
+                    mod_name = mod_name[:-12]
+                    is_pkg = True
                 else:
-                    mod_name = clean_name[:-3]
+                    mod_name = mod_name[:-3]
+                    is_pkg = False
                 
-                # Игнорируем пустые имена и внешние файлы
-                if mod_name:
-                    self.modules[mod_name] = name
-        
-        # Добавляем родительские пакеты, если их нет
-        all_mods = list(self.modules.keys())
-        for mod in all_mods:
-            parts = mod.split(".")
-            for i in range(1, len(parts)):
-                parent = ".".join(parts[:i])
-                if parent not in self.modules:
-                    self.modules[parent] = None # Маркер чистого пакета
+                self.modules[mod_name] = {"path": name, "is_pkg": is_pkg}
 
     def find_spec(self, fullname, path, target=None):
         if fullname in self.modules:
             spec = importlib.util.spec_from_loader(fullname, self)
-            # Если это пакет (есть __init__ или это родитель), помечаем его
-            is_pkg = self.modules[fullname] is None or self.modules[fullname].endswith("__init__.py")
-            if is_pkg:
-                spec.submodule_search_locations = [] 
+            if self.modules[fullname]["is_pkg"]:
+                spec.submodule_search_locations = [fullname]
             return spec
         return None
 
@@ -63,23 +52,18 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         return None
 
     def exec_module(self, module):
-        path = self.modules[module.__name__]
-        if path:
-            code = self.zip_file.read(path)
-            exec(code, module.__dict__)
-        else:
-            # Для пустых родительских пакетов просто помечаем как пакет
-            module.__path__ = []
+        mod_info = self.modules[module.__name__]
+        code = self.zip_file.read(mod_info["path"])
+        if mod_info["is_pkg"]:
+            module.__path__ = [module.__name__]
+        exec(code, module.__dict__)
 
 def start():
     # Список мест для поиска hbrute.data
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     possible_paths = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "hbrute.data"), # Рядом со скриптом
-        os.path.join(sys.prefix, "hbrute.data"), # В корне Python или VENV
-        os.path.join(sys.prefix, "local", "hbrute.data"), # Стандарт для некоторых систем
-        os.path.join(sys.prefix, "bin", "hbrute.data"), # Для Linux/macOS
-        os.path.join(sys.prefix, "Scripts", "hbrute.data"), # Для Windows
-        "hbrute.data" # В текущей папке
+        os.path.join(base_dir, "hbrute.data"),
+        "hbrute.data"
     ]
     
     data_path = None
