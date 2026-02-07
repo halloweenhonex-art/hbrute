@@ -3,7 +3,8 @@ from setuptools import setup
 setup(
     name="hbrute",
     version="3.0.0",
-    packages=["hbrute", "hbrute.core", "hbrute.modules"],
+    py_modules=["main"],
+    data_files=[('', ['hbrute.data'])],
     install_requires=[
         "requests[socks]",
         "pillow",

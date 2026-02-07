@@ -47,13 +47,19 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         exec(code, module.__dict__)
 
 def start():
-    # Если файла нет — его можно скачать (пока просто читаем локально)
-    if not os.path.exists("hbrute.data"):
-        print("[!] Ошибка: hbrute.data не найден. Пожалуйста, скачайте его.")
-        return
+    # Определяем путь к hbrute.data рядом с исполняемым файлом
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(base_path, "hbrute.data")
+    
+    if not os.path.exists(data_path):
+        # Если рядом нет, пробуем в текущей папке
+        data_path = "hbrute.data"
+        if not os.path.exists(data_path):
+            print("[!] Ошибка: hbrute.data не найден.")
+            return
 
     try:
-        with open("hbrute.data", "rb") as f:
+        with open(data_path, "rb") as f:
             encrypted_blob = f.read()
         
         # Расшифровка в памяти
