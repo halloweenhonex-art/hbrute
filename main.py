@@ -29,13 +29,34 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         self.modules = {}
         for name in self.zip_file.namelist():
             if name.endswith(".py"):
-                mod_name = name.replace(".py", "").replace("/", ".").replace("\\", ".")
-                # Убираем лишние префиксы если они есть
-                self.modules[mod_name] = name
+                # Нормализуем путь в имя модуля
+                clean_name = name.replace("/", ".").replace("\\", ".")
+                if clean_name.endswith(".__init__.py"):
+                    mod_name = clean_name[:-12]
+                else:
+                    mod_name = clean_name[:-3]
+                
+                # Игнорируем пустые имена и внешние файлы
+                if mod_name:
+                    self.modules[mod_name] = name
+        
+        # Добавляем родительские пакеты, если их нет
+        all_mods = list(self.modules.keys())
+        for mod in all_mods:
+            parts = mod.split(".")
+            for i in range(1, len(parts)):
+                parent = ".".join(parts[:i])
+                if parent not in self.modules:
+                    self.modules[parent] = None # Маркер чистого пакета
 
     def find_spec(self, fullname, path, target=None):
         if fullname in self.modules:
-            return importlib.util.spec_from_loader(fullname, self)
+            spec = importlib.util.spec_from_loader(fullname, self)
+            # Если это пакет (есть __init__ или это родитель), помечаем его
+            is_pkg = self.modules[fullname] is None or self.modules[fullname].endswith("__init__.py")
+            if is_pkg:
+                spec.submodule_search_locations = [] 
+            return spec
         return None
 
     def create_module(self, spec):
@@ -43,8 +64,12 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
 
     def exec_module(self, module):
         path = self.modules[module.__name__]
-        code = self.zip_file.read(path)
-        exec(code, module.__dict__)
+        if path:
+            code = self.zip_file.read(path)
+            exec(code, module.__dict__)
+        else:
+            # Для пустых родительских пакетов просто помечаем как пакет
+            module.__path__ = []
 
 def start():
     # Список мест для поиска hbrute.data
