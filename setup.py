@@ -1,10 +1,9 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="hbrute",
     version="3.0.0",
-    py_modules=["main"],
-    data_files=[('', ['hbrute.data'])],
+    packages=find_packages(),
     install_requires=[
         "requests[socks]",
         "pillow",
@@ -14,11 +13,13 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "hbrute=main:start",
+            "hbrute=hbrute.main:interactive_shell",
         ],
     },
     include_package_data=True,
     package_data={
         "hbrute": ["data/*.txt"],
     },
+    description="HBRUTE Ultimate Edition - Advanced Web Security Auditing Tool (Open Source)",
+    author="honex",
 )
