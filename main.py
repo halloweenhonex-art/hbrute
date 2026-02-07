@@ -47,16 +47,26 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         exec(code, module.__dict__)
 
 def start():
-    # Определяем путь к hbrute.data рядом с исполняемым файлом
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(base_path, "hbrute.data")
+    # Список мест для поиска hbrute.data
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "hbrute.data"), # Рядом со скриптом
+        os.path.join(sys.prefix, "hbrute.data"), # В корне Python или VENV
+        os.path.join(sys.prefix, "local", "hbrute.data"), # Стандарт для некоторых систем
+        os.path.join(sys.prefix, "bin", "hbrute.data"), # Для Linux/macOS
+        os.path.join(sys.prefix, "Scripts", "hbrute.data"), # Для Windows
+        "hbrute.data" # В текущей папке
+    ]
     
-    if not os.path.exists(data_path):
-        # Если рядом нет, пробуем в текущей папке
-        data_path = "hbrute.data"
-        if not os.path.exists(data_path):
-            print("[!] Ошибка: hbrute.data не найден.")
-            return
+    data_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            data_path = path
+            break
+
+    if not data_path:
+        print("[!] Ошибка: hbrute.data не найден.")
+        print(f"[*] Проверено в: {possible_paths}")
+        return
 
     try:
         with open(data_path, "rb") as f:
