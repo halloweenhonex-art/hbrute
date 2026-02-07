@@ -9,7 +9,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import hashlib
 
-# Тот же ключ, что и в билдере
 SECRET_KEY = b"hbrute_god_mode_secret_key_2026"
 KEY = hashlib.sha256(SECRET_KEY).digest()
 
@@ -18,7 +17,6 @@ def decrypt_data(data):
     encrypted = data[16:]
     cipher = Cipher(algorithms.AES(KEY), modes.CBC(iv), backend=default_backend())
     decryptor = cipher.decryptor()
-    
     decrypted_padded = decryptor.update(encrypted) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
     return unpadder.update(decrypted_padded) + unpadder.finalize()
@@ -29,7 +27,6 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         self.modules = {}
         for name in self.zip_file.namelist():
             if name.endswith(".py"):
-                # Превращаем путь в имя модуля: hbrute/core/banner.py -> hbrute.core.banner
                 mod_name = name.replace("/", ".").replace("\\", ".")
                 if mod_name.endswith(".__init__.py"):
                     mod_name = mod_name[:-12]
@@ -37,14 +34,12 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
                 else:
                     mod_name = mod_name[:-3]
                     is_pkg = False
-                
                 self.modules[mod_name] = {"path": name, "is_pkg": is_pkg}
 
     def find_spec(self, fullname, path, target=None):
         if fullname in self.modules:
             spec = importlib.util.spec_from_loader(fullname, self)
             if self.modules[fullname]["is_pkg"]:
-                # Важно для вложенных пакетов
                 spec.submodule_search_locations = [fullname]
             return spec
         return None
@@ -60,7 +55,6 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         exec(code, module.__dict__)
 
 def start():
-    # Находим hbrute.data
     base_dir = os.path.dirname(os.path.abspath(__file__))
     locations = [
         os.path.join(base_dir, "hbrute.data"),
@@ -68,22 +62,16 @@ def start():
         os.path.join(sys.prefix, "Scripts", "hbrute.data"),
         "hbrute.data"
     ]
-    
     data_path = next((p for p in locations if os.path.exists(p)), None)
     if not data_path:
         print("[!] Ошибка: hbrute.data не найден.")
         return
-
     try:
         with open(data_path, "rb") as f:
             data = f.read()
-        
-        # Расшифровка и загрузка из памяти
         sys.meta_path.append(MemoryLoader(decrypt_data(data)))
-        
         from hbrute.main import interactive_shell
         interactive_shell()
-        
     except Exception as e:
         print(f"[!] Ошибка загрузки: {e}")
 
