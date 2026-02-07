@@ -44,6 +44,7 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         if fullname in self.modules:
             spec = importlib.util.spec_from_loader(fullname, self)
             if self.modules[fullname]["is_pkg"]:
+                # Важно для вложенных пакетов
                 spec.submodule_search_locations = [fullname]
             return spec
         return None
@@ -59,40 +60,32 @@ class MemoryLoader(importlib.abc.MetaPathFinder):
         exec(code, module.__dict__)
 
 def start():
-    # Список мест для поиска hbrute.data
+    # Находим hbrute.data
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    possible_paths = [
+    locations = [
         os.path.join(base_dir, "hbrute.data"),
+        os.path.join(sys.prefix, "hbrute.data"),
+        os.path.join(sys.prefix, "Scripts", "hbrute.data"),
         "hbrute.data"
     ]
     
-    data_path = None
-    for path in possible_paths:
-        if os.path.exists(path):
-            data_path = path
-            break
-
+    data_path = next((p for p in locations if os.path.exists(p)), None)
     if not data_path:
         print("[!] Ошибка: hbrute.data не найден.")
-        print(f"[*] Проверено в: {possible_paths}")
         return
 
     try:
         with open(data_path, "rb") as f:
-            encrypted_blob = f.read()
+            data = f.read()
         
-        # Расшифровка в памяти
-        decrypted_zip = decrypt_data(encrypted_blob)
+        # Расшифровка и загрузка из памяти
+        sys.meta_path.append(MemoryLoader(decrypt_data(data)))
         
-        # Регистрация загрузчика из памяти
-        sys.meta_path.append(MemoryLoader(decrypted_zip))
-        
-        # Запуск главного модуля
-        import hbrute.main
-        hbrute.main.interactive_shell()
+        from hbrute.main import interactive_shell
+        interactive_shell()
         
     except Exception as e:
-        print(f"[!] Критическая ошибка загрузки: {e}")
+        print(f"[!] Ошибка загрузки: {e}")
 
 if __name__ == "__main__":
     start()
