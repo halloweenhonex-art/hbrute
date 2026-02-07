@@ -1,5 +1,6 @@
-# 💀 HBRUTE v3.1 Ultimate Edition
-![Banner](hbrute_github_banner_v3_1.png)
+# HBRUTE v3.1 
+
+![Banner](https://raw.githubusercontent.com/halloweenhonex-art/hbrute/main/hbrute_banner.png)
 
 Advanced Web Security Auditing Tool. Multi-platform support: Windows, Linux, Android (Termux).
 
@@ -46,8 +47,8 @@ hbrute
 - **WAF Detection**: Identify firewalls before attack.
 
 ## 🤝 Socials
-- **Telegram**: [@honex4](https://t.me/honex4)
-- **Support Project**: Star this repo! ⭐
+- **Telegram Channel**: [@honex_dev](https://t.me/honex_dev)
+- **Author**: [@honex4](https://t.me/honex4)
 
 ---
 *Disclaimer: Using this tool for unauthorized attacks is illegal. Use it only for educational purposes.*
