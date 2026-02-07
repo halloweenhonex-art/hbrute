@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="hbrute",
-    version="3.0.0",
-    packages=find_packages(),
+    version="3.1.0",
+    packages=["hbrute", "hbrute.core", "hbrute.modules"],
     install_requires=[
         "requests[socks]",
         "pillow",
